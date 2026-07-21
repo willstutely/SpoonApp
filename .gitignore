@@ -43,3 +43,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# primary text library (source PDFs/epubs) — feeds Source Management (Build
+# Order item 7) eventually, but too large/binary-heavy for git
+/Sources/
