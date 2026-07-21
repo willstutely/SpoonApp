@@ -43,10 +43,17 @@ const FEDERAL_HOLIDAYS = new Set([
   "2027-07-04",
 ]);
 
-function addDays(dateStr: string, days: number): string {
+export function addDays(dateStr: string, days: number): string {
   const d = new Date(`${dateStr}T00:00:00Z`);
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().slice(0, 10);
+}
+
+/** Monday (ISO date) of the week containing dateISO. */
+export function getWeekMonday(dateISO: string): string {
+  const d = new Date(`${dateISO}T00:00:00Z`);
+  const dow = d.getUTCDay();
+  return addDays(dateISO, dow === 0 ? -6 : 1 - dow);
 }
 
 function nextBusinessMonday(conferenceDate: string): string {
@@ -88,9 +95,7 @@ export function getEventsInRange(startISO: string, endISO: string): DerivedCalen
 }
 
 export function getEventsForWeek(anchorISO: string): DerivedCalendarEvent[] {
-  const anchor = new Date(`${anchorISO}T00:00:00Z`);
-  const dow = anchor.getUTCDay();
-  const monday = addDays(anchorISO, dow === 0 ? -6 : 1 - dow);
+  const monday = getWeekMonday(anchorISO);
   const sunday = addDays(monday, 6);
   return getEventsInRange(monday, sunday);
 }
