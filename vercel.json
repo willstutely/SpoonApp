@@ -1,0 +1,9 @@
+{
+  "crons": [
+    {
+      "comment": "Freeze the weekly episode view into the archive, Wednesday 12:01 AM ET (SPEC.md §2). Vercel cron is UTC-fixed, so this drifts an hour during EDT.",
+      "path": "/api/episode/archive",
+      "schedule": "5 5 * * 3"
+    }
+  ]
+}

@@ -35,6 +35,12 @@ export function AppShell({ children }: { children: ReactNode }) {
           >
             Calendar
           </Link>
+          <Link
+            href="/archive"
+            className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+          >
+            Archive
+          </Link>
         </div>
         <ThemeToggle />
       </nav>
