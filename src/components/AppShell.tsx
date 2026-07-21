@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import Link from "next/link";
 import { ThemeToggle } from "./ThemeToggle";
 
 /**
@@ -18,9 +19,17 @@ export function AppShell({ children }: { children: ReactNode }) {
         }`}
         onClick={(e) => e.stopPropagation()}
       >
-        <span className="text-base font-semibold tracking-tight">
-          Spoon Research
-        </span>
+        <div className="flex items-center gap-5">
+          <Link href="/" className="text-base font-semibold tracking-tight">
+            Spoon Research
+          </Link>
+          <Link
+            href="/calendar"
+            className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+          >
+            Calendar
+          </Link>
+        </div>
         <ThemeToggle />
       </nav>
       <main
