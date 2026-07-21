@@ -102,3 +102,18 @@ export const calendarEvents = pgTable("calendar_events", {
   type: calendarEventTypeEnum("type").notNull(),
   cases: jsonb("cases").$type<number[]>().notNull().default([]),
 });
+
+// Case Detail Page §4: "links + manual timestamped notes" for oral argument
+// audio/transcripts. Timestamp-to-audio alignment is deferred (see Future
+// Considerations) — timestampLabel is free text like "22:14".
+export const oralArgumentNotes = pgTable("oral_argument_notes", {
+  id: serial("id").primaryKey(),
+  caseId: integer("case_id")
+    .notNull()
+    .references(() => cases.id),
+  timestampLabel: varchar("timestamp_label", { length: 32 }).notNull(),
+  note: text("note").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
