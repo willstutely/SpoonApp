@@ -8,6 +8,7 @@ import {
   jsonb,
   integer,
   pgEnum,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 export const courtEnum = pgEnum("court", ["scotus", "circuit", "district"]);
@@ -187,3 +188,36 @@ export const sourcePassages = pgTable("source_passages", {
   ordinal: integer("ordinal").notNull(),
   text: text("text").notNull(),
 });
+
+// Case Detail Page §4 "Arguments" section: one thinker's take on one case,
+// generated once and cached globally per SPEC.md's cost principles — a
+// user's default-five selection controls what *displays*, never triggers
+// separate generation. citedPassages carries the actual source_passages
+// this was grounded in, for the "link to the actual source text" citation.
+export const thinkerAnalyses = pgTable(
+  "thinker_analyses",
+  {
+    id: serial("id").primaryKey(),
+    caseId: integer("case_id")
+      .notNull()
+      .references(() => cases.id),
+    collectionId: integer("collection_id")
+      .notNull()
+      .references(() => sourceCollections.id),
+    summary: text("summary").notNull(),
+    citedPassages: jsonb("cited_passages")
+      .$type<{ documentTitle: string; anchorId: string; quote: string }[]>()
+      .notNull()
+      .default([]),
+    model: text("model").notNull(),
+    generatedAt: timestamp("generated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("thinker_analyses_case_collection_idx").on(
+      table.caseId,
+      table.collectionId
+    ),
+  ]
+);

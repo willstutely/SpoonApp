@@ -1,5 +1,7 @@
 import { getCaseDetail } from "@/lib/getCaseDetail";
+import { getThinkerArgumentsForCase } from "@/lib/getThinkerArguments";
 import { NoteForm } from "@/components/NoteForm";
+import { ThinkerArguments } from "@/components/ThinkerArguments";
 
 const COURT_LABEL: Record<string, string> = {
   scotus: "SCOTUS",
@@ -51,6 +53,7 @@ export default async function CasePage({
   }
 
   const { case: c, notes } = result;
+  const thinkers = await getThinkerArgumentsForCase(c.id);
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-8 px-4 py-6">
@@ -110,6 +113,10 @@ export default async function CasePage({
           </ul>
         )}
         <NoteForm caseId={c.id} />
+      </Section>
+
+      <Section title="Arguments">
+        <ThinkerArguments caseId={c.id} thinkers={thinkers} />
       </Section>
 
       <Section title="People Involved">
