@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { getCaseDetail } from "@/lib/getCaseDetail";
 import { getThinkerArgumentsForCase } from "@/lib/getThinkerArguments";
+import { getCourtListenerData } from "@/lib/getCourtListenerData";
 import { NoteForm } from "@/components/NoteForm";
 import { ThinkerArguments } from "@/components/ThinkerArguments";
 import { GenerateSteelmanButton } from "@/components/GenerateSteelmanButton";
 import { GenerateBriefButton } from "@/components/GenerateBriefButton";
 import { CitationLink, dedupeCitations } from "@/components/CitationLink";
+import { PrecedentGraph } from "@/components/PrecedentGraph";
 
 const COURT_LABEL: Record<string, string> = {
   scotus: "SCOTUS",
@@ -58,6 +60,7 @@ export default async function CasePage({
 
   const { case: c, notes } = result;
   const thinkers = await getThinkerArgumentsForCase(c.id);
+  const cl = await getCourtListenerData(c.id, c.docketNumber, c.court, c.courtlistenerId);
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-8 px-4 py-6">
@@ -94,17 +97,61 @@ export default async function CasePage({
       </Section>
 
       <Section title="Case Summary">
-        <p className="text-sm text-zinc-500">Summary not yet generated.</p>
+        {cl?.syllabusExcerpt ? (
+          <>
+            <p className="text-xs text-zinc-500">
+              Official syllabus, via CourtListener — not AI-generated.
+            </p>
+            <p className="whitespace-pre-line text-sm text-zinc-700 dark:text-zinc-300">
+              {cl.syllabusExcerpt}
+            </p>
+          </>
+        ) : (
+          <p className="text-sm text-zinc-500">
+            {cl === null
+              ? "No opinion issued yet, or no CourtListener match found."
+              : "Summary not yet generated."}
+          </p>
+        )}
       </Section>
 
       <Section title="Court Documents">
-        <p className="text-sm text-zinc-500">
-          No documents yet — CourtListener/RECAP integration not connected.
-        </p>
+        {cl?.downloadUrl || cl?.courtListenerUrl ? (
+          <ul className="space-y-1 text-sm">
+            {cl.downloadUrl && (
+              <li>
+                <a href={cl.downloadUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                  Official opinion (supremecourt.gov)
+                </a>
+              </li>
+            )}
+            {cl.courtListenerUrl && (
+              <li>
+                <a href={cl.courtListenerUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                  View on CourtListener
+                </a>
+              </li>
+            )}
+          </ul>
+        ) : (
+          <p className="text-sm text-zinc-500">
+            No documents yet — CourtListener/RECAP integration not connected.
+          </p>
+        )}
       </Section>
 
       <Section title="Case Timeline">
-        <p className="text-sm text-zinc-500">No timeline data yet.</p>
+        {cl?.decisionDate ? (
+          <p className="text-sm text-zinc-700 dark:text-zinc-300">
+            Decided{" "}
+            {new Date(cl.decisionDate).toLocaleDateString("en-US", {
+              dateStyle: "long",
+              timeZone: "UTC",
+            })}
+          </p>
+        ) : (
+          <p className="text-sm text-zinc-500">No timeline data yet.</p>
+        )}
       </Section>
 
       <Section title="Oral Argument">
@@ -156,7 +203,7 @@ export default async function CasePage({
       </Section>
 
       <Section title="Precedent Graph">
-        <p className="text-sm text-zinc-500">No citation data yet.</p>
+        <PrecedentGraph precedentGraph={cl?.precedentGraph ?? null} />
       </Section>
     </div>
   );
