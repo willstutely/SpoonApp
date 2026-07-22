@@ -117,3 +117,73 @@ export const oralArgumentNotes = pgTable("oral_argument_notes", {
     .notNull()
     .defaultNow(),
 });
+
+// Primary text library ("pundits who may be asked to give their thoughts on
+// any given case"): thinkers whose analysis Claude generates on-demand, plus
+// collective founding documents and historical case law that aren't a single
+// "voice" but are still citable source material. One collection per corpus;
+// grouping matches the Case Detail Page §4 thinker sections.
+export const sourceCollectionKindEnum = pgEnum("source_collection_kind", [
+  "thinker",
+  "reference_text",
+  "historical_case",
+]);
+
+export const thinkerGroupEnum = pgEnum("thinker_group", [
+  "founder", // Founder's Corner
+  "founders_reading", // What the Founders Were Reading
+  "historical", // Historical Thoughts
+]);
+
+export const sourceCollections = pgTable("source_collections", {
+  id: serial("id").primaryKey(),
+  slug: varchar("slug", { length: 64 }).notNull().unique(),
+  name: text("name").notNull(),
+  kind: sourceCollectionKindEnum("kind").notNull(),
+  thinkerGroup: thinkerGroupEnum("thinker_group"), // set only when kind = 'thinker'
+  // Spooner only — the "gold standard" framework anchor. Downstream
+  // retrieval/generation code can weight or prioritize this collection.
+  isCoreFramework: boolean("is_core_framework").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export const documentFormatEnum = pgEnum("document_format", ["pdf", "epub"]);
+export const documentStatusEnum = pgEnum("document_status", [
+  "pending",
+  "extracted",
+  "failed",
+]);
+
+export const sourceDocuments = pgTable("source_documents", {
+  id: serial("id").primaryKey(),
+  collectionId: integer("collection_id")
+    .notNull()
+    .references(() => sourceCollections.id),
+  title: text("title").notNull(),
+  // Path relative to Sources/, for idempotent re-ingestion and traceability.
+  filePath: text("file_path").notNull().unique(),
+  // Filled in once uploaded to Vercel Blob — null until that's wired up.
+  blobUrl: text("blob_url"),
+  format: documentFormatEnum("format").notNull(),
+  status: documentStatusEnum("status").notNull().default("pending"),
+  errorMessage: text("error_message"),
+  extractedAt: timestamp("extracted_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+// Paragraph-level chunks. anchorId enables the "self-hosted sources" deep
+// linking tier from SPEC.md's Generate Brief citation strategy, and the
+// passage text itself is what retrieval-grounded generation pulls from.
+export const sourcePassages = pgTable("source_passages", {
+  id: serial("id").primaryKey(),
+  documentId: integer("document_id")
+    .notNull()
+    .references(() => sourceDocuments.id),
+  anchorId: varchar("anchor_id", { length: 32 }).notNull(),
+  ordinal: integer("ordinal").notNull(),
+  text: text("text").notNull(),
+});
