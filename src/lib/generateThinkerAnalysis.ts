@@ -3,7 +3,13 @@ import { getAnthropicClient } from "./anthropic";
 import { modelFor } from "./models";
 import { getRelevantPassages, type RetrievedPassage } from "./retrievePassages";
 
-export type CitedPassage = { documentTitle: string; anchorId: string; quote: string };
+export type CitedPassage = {
+  documentTitle: string;
+  anchorId: string;
+  quote: string;
+  /** Optional — older cached rows predate this field. */
+  documentId?: number;
+};
 
 export type ThinkerAnalysisResult = {
   collectionSlug: string;
@@ -136,6 +142,7 @@ export async function getOrGenerateThinkerAnalysis(
       .trim();
 
     const citedPassages: CitedPassage[] = passages.map((p) => ({
+      documentId: p.documentId,
       documentTitle: p.documentTitle,
       anchorId: p.anchorId,
       quote: p.text.slice(0, 280),

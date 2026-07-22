@@ -29,6 +29,13 @@
       "when": 1784689380650,
       "tag": "0003_great_magik",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1784690665923,
+      "tag": "0004_swift_emma_frost",
+      "breakpoints": true
     }
   ]
 }

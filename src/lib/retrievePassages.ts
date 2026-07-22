@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 
 export type RetrievedPassage = {
+  documentId: number;
   documentTitle: string;
   anchorId: string;
   text: string;
@@ -41,12 +42,14 @@ export async function getRelevantPassages(
   const { db } = await import("@/db");
 
   const result = await db.execute<{
+    document_id: number;
     document_title: string;
     anchor_id: string;
     text: string;
     rank: number;
   }>(sql`
     select
+      sd.id as document_id,
       sd.title as document_title,
       sp.anchor_id,
       sp.text,
@@ -61,6 +64,54 @@ export async function getRelevantPassages(
   `);
 
   return result.rows.map((r) => ({
+    documentId: r.document_id,
+    documentTitle: r.document_title,
+    anchorId: r.anchor_id,
+    text: r.text,
+    rank: r.rank,
+  }));
+}
+
+/**
+ * Same as getRelevantPassages but scoped to a collection *kind* rather than
+ * one slug — used for "historical review of relevant case law" (Generate
+ * Brief §5), which should draw from whichever historical_case collections
+ * are actually relevant to this case, not one fixed corpus.
+ */
+export async function getRelevantPassagesByKind(
+  kind: "thinker" | "reference_text" | "historical_case",
+  query: string,
+  limit = 5
+): Promise<RetrievedPassage[]> {
+  const tsQuery = buildOrTsQuery(query);
+  if (!tsQuery) return [];
+
+  const { db } = await import("@/db");
+
+  const result = await db.execute<{
+    document_id: number;
+    document_title: string;
+    anchor_id: string;
+    text: string;
+    rank: number;
+  }>(sql`
+    select
+      sd.id as document_id,
+      sd.title as document_title,
+      sp.anchor_id,
+      sp.text,
+      ts_rank(to_tsvector('english', sp.text), to_tsquery('english', ${tsQuery})) as rank
+    from source_passages sp
+    join source_documents sd on sd.id = sp.document_id
+    join source_collections sc on sc.id = sd.collection_id
+    where sc.kind = ${kind}
+      and to_tsvector('english', sp.text) @@ to_tsquery('english', ${tsQuery})
+    order by rank desc
+    limit ${limit}
+  `);
+
+  return result.rows.map((r) => ({
+    documentId: r.document_id,
     documentTitle: r.document_title,
     anchorId: r.anchor_id,
     text: r.text,

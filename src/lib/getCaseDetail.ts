@@ -8,7 +8,10 @@ export type CaseRow = {
   scotusBound: boolean;
   flaggedBy: string[];
   steelman: string | null;
-  steelmanCitedPassages: { documentTitle: string; anchorId: string; quote: string }[] | null;
+  steelmanCitedPassages:
+    | { documentTitle: string; anchorId: string; quote: string; documentId?: number }[]
+    | null;
+  hasBrief: boolean;
 };
 
 export type OralArgumentNoteRow = {
@@ -49,7 +52,7 @@ export async function getCaseDetail(id: number): Promise<CaseDetailResult> {
 
     return {
       status: "ok",
-      case: row,
+      case: { ...row, hasBrief: row.briefContent !== null },
       notes: notes.map((n) => ({
         id: n.id,
         timestampLabel: n.timestampLabel,

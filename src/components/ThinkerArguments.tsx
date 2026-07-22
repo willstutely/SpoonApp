@@ -4,6 +4,7 @@ import {
   type ThinkerGroup,
 } from "@/lib/getThinkerArguments";
 import { GenerateThinkerButton } from "./GenerateThinkerButton";
+import { CitationLink, dedupeCitations } from "./CitationLink";
 
 const GROUP_ORDER: ThinkerGroup[] = ["founder", "founders_reading", "historical"];
 
@@ -54,13 +55,11 @@ export function ThinkerArguments({
                         {thinker.analysis.summary}
                       </p>
                       {thinker.analysis.citedPassages.length > 0 && (
-                        <p className="text-xs text-zinc-500">
-                          Sources:{" "}
-                          {[
-                            ...new Set(
-                              thinker.analysis.citedPassages.map((c) => c.documentTitle)
-                            ),
-                          ].join(", ")}
+                        <p className="flex flex-wrap gap-x-2 text-xs text-zinc-500">
+                          <span>Sources:</span>
+                          {dedupeCitations(thinker.analysis.citedPassages).map((c, i) => (
+                            <CitationLink key={i} citation={c} />
+                          ))}
                         </p>
                       )}
                     </>

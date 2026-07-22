@@ -101,6 +101,7 @@ export async function getOrGenerateSteelman(caseId: number): Promise<SteelmanOut
       .trim();
 
     const citedPassages: CitedPassage[] = passages.map((p) => ({
+      documentId: p.documentId,
       documentTitle: p.documentTitle,
       anchorId: p.anchorId,
       quote: p.text.slice(0, 280),

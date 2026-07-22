@@ -53,9 +53,20 @@ export const cases = pgTable("cases", {
   // rather than a join table.
   steelman: text("steelman"),
   steelmanCitedPassages: jsonb("steelman_cited_passages")
-    .$type<{ documentTitle: string; anchorId: string; quote: string }[]>(),
+    .$type<{ documentTitle: string; anchorId: string; quote: string; documentId?: number }[]>(),
   steelmanModel: text("steelman_model"),
   steelmanGeneratedAt: timestamp("steelman_generated_at", { withTimezone: true }),
+  // Generate Brief §5: assembled and synthesized from already-cached
+  // material (thinker_analyses, steelman) — never re-derived from scratch.
+  // One per case, like steelman.
+  briefContent: jsonb("brief_content").$type<{
+    overview: string;
+    philosophicalAnalysis: string;
+    historicalReview: string;
+    citations: { documentTitle: string; anchorId: string; documentId: number }[];
+  }>(),
+  briefModel: text("brief_model"),
+  briefGeneratedAt: timestamp("brief_generated_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -214,7 +225,7 @@ export const thinkerAnalyses = pgTable(
       .references(() => sourceCollections.id),
     summary: text("summary").notNull(),
     citedPassages: jsonb("cited_passages")
-      .$type<{ documentTitle: string; anchorId: string; quote: string }[]>()
+      .$type<{ documentTitle: string; anchorId: string; quote: string; documentId?: number }[]>()
       .notNull()
       .default([]),
     model: text("model").notNull(),

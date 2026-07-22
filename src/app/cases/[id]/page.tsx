@@ -1,8 +1,11 @@
+import Link from "next/link";
 import { getCaseDetail } from "@/lib/getCaseDetail";
 import { getThinkerArgumentsForCase } from "@/lib/getThinkerArguments";
 import { NoteForm } from "@/components/NoteForm";
 import { ThinkerArguments } from "@/components/ThinkerArguments";
 import { GenerateSteelmanButton } from "@/components/GenerateSteelmanButton";
+import { GenerateBriefButton } from "@/components/GenerateBriefButton";
+import { CitationLink, dedupeCitations } from "@/components/CitationLink";
 
 const COURT_LABEL: Record<string, string> = {
   scotus: "SCOTUS",
@@ -80,6 +83,16 @@ export default async function CasePage({
         </div>
       </div>
 
+      <Section title="Generate Brief">
+        {c.hasBrief ? (
+          <Link href={`/cases/${c.id}/brief`} className="text-sm underline">
+            View Brief
+          </Link>
+        ) : (
+          <GenerateBriefButton caseId={c.id} />
+        )}
+      </Section>
+
       <Section title="Case Summary">
         <p className="text-sm text-zinc-500">Summary not yet generated.</p>
       </Section>
@@ -125,9 +138,11 @@ export default async function CasePage({
           <>
             <p className="text-sm text-zinc-700 dark:text-zinc-300">{c.steelman}</p>
             {c.steelmanCitedPassages && c.steelmanCitedPassages.length > 0 && (
-              <p className="text-xs text-zinc-500">
-                Sources:{" "}
-                {[...new Set(c.steelmanCitedPassages.map((p) => p.documentTitle))].join(", ")}
+              <p className="flex flex-wrap gap-x-2 text-xs text-zinc-500">
+                <span>Sources:</span>
+                {dedupeCitations(c.steelmanCitedPassages).map((p, i) => (
+                  <CitationLink key={i} citation={p} />
+                ))}
               </p>
             )}
           </>
