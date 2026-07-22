@@ -40,7 +40,7 @@ export async function getFeedData(): Promise<SourceFeedView[]> {
           const [row] = await db
             .select()
             .from(sources)
-            .where(eq(sources.url, source.url))
+            .where(eq(sources.url, source.feedUrl ?? source.url))
             .limit(1);
 
           if (!row) {

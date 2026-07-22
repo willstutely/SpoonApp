@@ -41,6 +41,12 @@ export function AppShell({ children }: { children: ReactNode }) {
           >
             Archive
           </Link>
+          <Link
+            href="/sources"
+            className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+          >
+            Sources
+          </Link>
         </div>
         <ThemeToggle />
       </nav>

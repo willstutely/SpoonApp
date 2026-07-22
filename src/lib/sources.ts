@@ -8,7 +8,17 @@ export type SourceTier =
 export type SeedSource = {
   slug: string;
   name: string;
+  /** Homepage — used for the clickable source-name link, human-friendly. */
   url: string;
+  /**
+   * The actual RSS/Atom endpoint, if known — this is what ingestSource.ts
+   * stores as a DB `sources.url` when the feed is added, so it's what
+   * getFeedData.ts matches against to find that source's ingested items.
+   * A source with no feedUrl here just won't show ingested content on the
+   * landing page until someone adds it via /sources with the right feed
+   * URL (verify each one before adding — sites' feed paths vary).
+   */
+  feedUrl?: string;
   tier: SourceTier;
   lean: "liberty" | "state_power" | "unclassified";
   summary: string;
@@ -64,6 +74,7 @@ export const SEED_SOURCES: SeedSource[] = [
     slug: "volokh",
     name: "Volokh Conspiracy",
     url: "https://reason.com/volokh",
+    feedUrl: "https://reason.com/volokh/feed/",
     tier: "commentary",
     lean: "liberty",
     summary: "Doctrinal commentary.",
