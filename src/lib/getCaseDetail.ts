@@ -7,6 +7,8 @@ export type CaseRow = {
   status: string;
   scotusBound: boolean;
   flaggedBy: string[];
+  steelman: string | null;
+  steelmanCitedPassages: { documentTitle: string; anchorId: string; quote: string }[] | null;
 };
 
 export type OralArgumentNoteRow = {

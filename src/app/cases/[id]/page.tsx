@@ -2,6 +2,7 @@ import { getCaseDetail } from "@/lib/getCaseDetail";
 import { getThinkerArgumentsForCase } from "@/lib/getThinkerArguments";
 import { NoteForm } from "@/components/NoteForm";
 import { ThinkerArguments } from "@/components/ThinkerArguments";
+import { GenerateSteelmanButton } from "@/components/GenerateSteelmanButton";
 
 const COURT_LABEL: Record<string, string> = {
   scotus: "SCOTUS",
@@ -117,6 +118,22 @@ export default async function CasePage({
 
       <Section title="Arguments">
         <ThinkerArguments caseId={c.id} thinkers={thinkers} />
+      </Section>
+
+      <Section title="Steelman the Opposition">
+        {c.steelman ? (
+          <>
+            <p className="text-sm text-zinc-700 dark:text-zinc-300">{c.steelman}</p>
+            {c.steelmanCitedPassages && c.steelmanCitedPassages.length > 0 && (
+              <p className="text-xs text-zinc-500">
+                Sources:{" "}
+                {[...new Set(c.steelmanCitedPassages.map((p) => p.documentTitle))].join(", ")}
+              </p>
+            )}
+          </>
+        ) : (
+          <GenerateSteelmanButton caseId={c.id} />
+        )}
       </Section>
 
       <Section title="People Involved">

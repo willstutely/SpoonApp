@@ -48,6 +48,14 @@ export const cases = pgTable("cases", {
   status: caseStatusEnum("status").notNull().default("active"),
   scotusBound: boolean("scotus_bound").notNull().default(false),
   flaggedBy: jsonb("flagged_by").$type<string[]>().notNull().default([]),
+  // Case Detail Page §4 "Steelman the Opposition" — always included, one per
+  // case (unlike thinker_analyses which is many-per-case), so plain columns
+  // rather than a join table.
+  steelman: text("steelman"),
+  steelmanCitedPassages: jsonb("steelman_cited_passages")
+    .$type<{ documentTitle: string; anchorId: string; quote: string }[]>(),
+  steelmanModel: text("steelman_model"),
+  steelmanGeneratedAt: timestamp("steelman_generated_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
